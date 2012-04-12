@@ -19,8 +19,15 @@ end
 module Tutorial
   class App
 
+    def config
+      @config ||= YAML.load_file('database.yml').inject({}) do |res,kv|
+        k,v = kv
+        res[k.to_sym]=v
+        res
+      end
+    end
+
     def initialize(*arg)
-      config = YAML.load_file('database.yml')
       puts config
       @db = EventMachine::Synchrony::ConnectionPool.new(:size=> 10) do
         Mysql2::EM::Client.new config
