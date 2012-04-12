@@ -4,7 +4,6 @@ require "em-synchrony/mysql2"
 
 
 class DefferBody
-
   include EventMachine::Deferrable
   
   def <<(chunk)
@@ -29,13 +28,11 @@ module Tutorial
     end
 
     def call(env)
-
-
       body = DefferBody.new
-
       env['async.callback'].call([200, {'Content-Type' => 'text/plain'}, body])
 
       res = @db.aquery('SELECT SLEEP(0.1)')
+
       res.callback do |res|
         body << res.to_a.to_s
         body.succeed
@@ -46,8 +43,7 @@ module Tutorial
         body.succeed
       end
 
-
-      [-1,{}, []]
+      [-1, {}, []]
     end
 
   end
