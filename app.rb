@@ -9,10 +9,11 @@ class DefferBody
   
   def <<(chunk)
     @callback.call(chunk)
+    self
   end
 
   def each(&blk)
-    @callback = @blk
+    @callback = blk
   end
 end
 
@@ -21,16 +22,18 @@ module Tutorial
 
     def initialize(*arg)
       config = YAML.load_file('database.yml')
-      @db = EventMachine::Synchrony::ConnectionPool.new(:size=> 150) do
+      puts config
+      @db = EventMachine::Synchrony::ConnectionPool.new(:size=> 10) do
         Mysql2::EM::Client.new config
       end
     end
 
     def call(env)
 
+
       body = DefferBody.new
 
-      env['async.callback'].call [200, {}, body]
+      env['async.callback'].call([200, {'Content-Type' => 'text/plain'}, body])
 
       res = @db.aquery('SELECT SLEEP(0.1)')
       res.callback do |res|
@@ -39,6 +42,7 @@ module Tutorial
       end
 
       res.errback do |e|
+        puts e.message, e.backtrace
         body.succeed
       end
 
